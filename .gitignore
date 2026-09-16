@@ -1,0 +1,15 @@
+﻿__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Jupyter / temporary files
+.ipynb_checkpoints/
+
+# Model & dataset
+*.joblib
+*.csv
+
+# Streamlit
+.streamlit/secrets.toml
