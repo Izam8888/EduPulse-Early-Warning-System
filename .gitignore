@@ -1,15 +1,18 @@
-﻿__pycache__/
+﻿# Python
+__pycache__/
 *.pyc
+
+# Virtual Environment
 .venv/
 venv/
-.env
 
-# Jupyter / temporary files
+# Environment / Secrets
+.env
+.streamlit/secrets.toml
+
+# Jupyter
 .ipynb_checkpoints/
 
-# Model & dataset
-*.joblib
-*.csv
-
-# Streamlit
-.streamlit/secrets.toml
+# OS
+.DS_Store
+Thumbs.db

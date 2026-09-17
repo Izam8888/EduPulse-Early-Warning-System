@@ -418,7 +418,12 @@ df = build_dashboard_data(df)
 # =========================================================
 
 with st.sidebar:
-    st.markdown("# 📊 EduPulse")
+
+    st.image(
+        "new-logo-edupulse/new-logo-edupulse.svg",
+        width=125
+    )
+
     st.markdown("### Student Early Warning System")
 
     st.divider()
@@ -1111,18 +1116,30 @@ with tab_dashboard:
         else "negatif"
     )
 
+    relationship_interpretation = (
+        "nilai indikator yang lebih tinggi cenderung diikuti "
+        "peningkatan probabilitas dropout"
+        if strongest_relationship_value > 0
+        else
+        "nilai indikator yang lebih tinggi cenderung diikuti "
+        "penurunan probabilitas dropout"
+    )
+
     st.markdown("### 💡 Insight")
 
     st.info(
-        f"Di antara indikator yang digunakan model, **{relationship_labels[strongest_relationship]}** "
-        f"menunjukkan pola hubungan monotonic paling kuat dengan **Dropout Probability**, "
-        f"dengan korelasi Spearman **{strongest_relationship_value:.2f}** "
+        f"Di antara indikator yang digunakan model, "
+        f"**{relationship_labels[strongest_relationship]}** "
+        f"menunjukkan pola hubungan monotonic paling kuat dengan "
+        f"**Dropout Probability**, dengan korelasi Spearman "
+        f"**{strongest_relationship_value:.2f}** "
         f"({relationship_direction}). "
-        f"Artinya, pada data yang ditampilkan, perubahan nilai indikator tersebut "
-        f"cenderung diikuti perubahan probabilitas dropout yang berlawanan arah. "
-        f"Temuan ini menggambarkan pola pada output model dan bukan hubungan sebab-akibat."
+        f"Artinya, pada data yang ditampilkan, "
+        f"{relationship_interpretation}. "
+        f"Temuan ini menggambarkan pola pada output model "
+        f"dan bukan hubungan sebab-akibat."
     )
-          
+
 # =========================================================
 # MONITORING TAB
 # =========================================================
