@@ -44,7 +44,13 @@ st.markdown(
     }
 
     p, label {
-        color: #6F6D78;
+        color: #4A4655 !important;
+    }
+
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span {
+        color: white !important;
     }
 
     .metric-card {
@@ -56,12 +62,13 @@ st.markdown(
     }
 
     .metric-title {
-        color: #6F6D78;
+        color: #4A4655 !important;
         font-size: 14px;
+        font-weight: 500;
     }
 
     .metric-value {
-        color: #292832;
+        color: #292832 !important;
         font-size: 28px;
         font-weight: 700;
     }
@@ -74,8 +81,10 @@ st.markdown(
     }
 
     .stButton > button:hover {
-        background-color: #EEEBFA !important;
-        color: #6F5BC3 !important;
+        background-color: #E5DFFC !important;
+        color: #5F4DB0 !important;
+        border-color: #6F5BC3 !important;
+        box-shadow: 0 0 0 1px #6F5BC3 !important;
     }
 
     .stButton > button[kind="primary"] {
@@ -89,6 +98,19 @@ st.markdown(
         background-color: #806FC9 !important;
         color: #FFFFFF !important;
         border-color: #806FC9 !important;
+    }
+
+    .stDownloadButton > button {
+        background-color: #FFFFFF !important;
+        color: #6F5BC3 !important;
+        border: 1px solid #E2DEF2 !important;
+        border-radius: 8px !important;
+    }
+
+    .stDownloadButton > button:hover {
+        background-color: #E5DFFC !important;
+        color: #5F4DB0 !important;
+        border-color: #6F5BC3 !important;
     }
 
     div[data-testid="stNumberInput"] > div {
@@ -111,6 +133,23 @@ st.markdown(
     div[data-testid="stNumberInput"] button {
         background-color: #FFFFFF !important;
         color: #292832 !important;
+    }
+
+    div[data-testid="stTextInput"] > div {
+        background-color: #FFFFFF !important;
+        border-radius: 8px !important;
+    }
+
+    div[data-testid="stTextInput"] input {
+        background-color: #FFFFFF !important;
+        color: #292832 !important;
+        -webkit-text-fill-color: #292832 !important;
+        border-color: #E2DEF2 !important;
+    }
+
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #6F6D78 !important;
+        opacity: 1 !important;
     }
 
     div[data-testid="stSelectbox"] [role="combobox"] {
@@ -136,10 +175,73 @@ st.markdown(
         color: #292832 !important;
         margin-bottom: 6px;
     }
+
     </style>
     """,
     unsafe_allow_html=True
 )
+
+def apply_plotly_theme(fig):
+    fig.update_layout(
+        font=dict(
+            family="Arial",
+            color="#292832",
+            size=12
+        ),
+
+        legend=dict(
+            font=dict(
+                color="#292832",
+                size=12
+            )
+        ),
+
+        xaxis=dict(
+            title_font=dict(
+                color="#292832",
+                size=13
+            ),
+            tickfont=dict(
+                color="#292832",
+                size=11
+            )
+        ),
+
+        yaxis=dict(
+            title_font=dict(
+                color="#292832",
+                size=13
+            ),
+            tickfont=dict(
+                color="#292832",
+                size=11
+            )
+        ),
+
+        coloraxis_colorbar=dict(
+            tickfont=dict(
+                color="#292832",
+                size=11
+            ),
+            title_font=dict(
+                color="#292832",
+                size=12
+            )
+        )
+    )
+
+    fig.update_coloraxes(
+        colorbar_tickfont=dict(
+            color="#292832",
+            size=11
+        ),
+        colorbar_title_font=dict(
+            color="#292832",
+            size=12
+        )
+    )
+
+    return fig
 
 
 # =========================================================
@@ -318,17 +420,20 @@ df = build_dashboard_data(df)
 with st.sidebar:
     st.markdown("# 📊 EduPulse")
     st.markdown("### Student Early Warning System")
+
     st.divider()
-    st.markdown("**Dashboard**")
+
+    st.markdown("**Student Dropout Risk Dashboard**")
     st.markdown(
-        "Monitor student performance and identify students "
-        "who may need early intervention."
+        "Pantau indikator siswa untuk mengidentifikasi risiko "
+        "dropout dan mendukung intervensi awal."
     )
 
     st.divider()
-    st.caption("Main Model")
-    st.caption("Logistic Regression")
-    st.caption("Lightweight • 6 Inputs")
+
+    st.markdown("**Model**")
+    st.markdown("Logistic Regression")
+    st.markdown("6 Indikator")
 
 
 # =========================================================
@@ -337,8 +442,8 @@ with st.sidebar:
 
 st.title("Student Dropout Risk Dashboard")
 st.markdown(
-    "Monitor student indicators and identify students who may "
-    "need early intervention based on predicted dropout risk."
+    "Pantau indikator siswa dan identifikasi siswa yang memerlukan "
+    "intervensi awal berdasarkan prediksi risiko dropout."
 )
 
 
@@ -395,59 +500,89 @@ st.write("")
 # PERFORMANCE KPI CARDS
 # =========================================================
 
+st.subheader("Performance Overview")
+
 performance = df[
     [
         "GPA",
         "Attendance_Rate",
         "Study_Hours_per_Day",
-        "Stress_Index"
+        "Stress_Index",
+        "Travel_Time_Minutes",
+        "Assignment_Delay_Days",
     ]
 ].mean()
 
-performance_col1, performance_col2, performance_col3, performance_col4 = st.columns(4)
+perf1, perf2, perf3 = st.columns(3)
 
-with performance_col1:
+with perf1:
     st.markdown(
         f"""
         <div class="metric-card">
             <div class="metric-title">Average GPA</div>
-            <div class="metric-value">{performance['GPA']:.2f}</div>
+            <div class="metric-value">{performance["GPA"]:.2f}</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-with performance_col2:
+with perf2:
     st.markdown(
         f"""
         <div class="metric-card">
             <div class="metric-title">Average Attendance</div>
-            <div class="metric-value">{performance['Attendance_Rate']:.1f}%</div>
+            <div class="metric-value">{performance["Attendance_Rate"]:.1f}%</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-with performance_col3:
+with perf3:
     st.markdown(
         f"""
         <div class="metric-card">
             <div class="metric-title">Average Study Hours</div>
-            <div class="metric-value">{performance['Study_Hours_per_Day']:.1f}</div>
+            <div class="metric-value">{performance["Study_Hours_per_Day"]:.1f} hrs/day</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-with performance_col4:
+st.write("")
+
+perf4, perf5, perf6 = st.columns(3)
+
+with perf4:
     st.markdown(
         f"""
         <div class="metric-card">
             <div class="metric-title">Average Stress Index</div>
-            <div class="metric-value">{performance['Stress_Index']:.1f}</div>
+            <div class="metric-value">{performance["Stress_Index"]:.1f}</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
+    )
+
+with perf5:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-title">Average Travel Time</div>
+            <div class="metric-value">{performance["Travel_Time_Minutes"]:.1f} min</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with perf6:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-title">Average Assignment Delay</div>
+            <div class="metric-value">{performance["Assignment_Delay_Days"]:.1f} days</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 st.write("")
@@ -531,12 +666,54 @@ with tab_dashboard:
 
     st.markdown("### Risk Level")
 
-    analysis_filter = st.selectbox(
-        "Filter Risk Level",
-        ["All", "High Risk", "Medium Risk", "Low Risk"],
-        index=0,
-        key="dashboard_risk_filter"
-    )
+    st.markdown("**Filter Tingkat Risiko**")
+
+    if "dashboard_risk_filter" not in st.session_state:
+        st.session_state.dashboard_risk_filter = "All"
+
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+
+    with filter_col1:
+        if st.button(
+            "All",
+            use_container_width=True,
+            type="primary" if st.session_state.dashboard_risk_filter == "All" else "secondary",
+            key="dashboard_filter_all"
+        ):
+            st.session_state.dashboard_risk_filter = "All"
+            st.rerun()
+
+    with filter_col2:
+        if st.button(
+            "High Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.dashboard_risk_filter == "High Risk" else "secondary",
+            key="dashboard_filter_high"
+        ):
+            st.session_state.dashboard_risk_filter = "High Risk"
+            st.rerun()
+
+    with filter_col3:
+        if st.button(
+            "Medium Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.dashboard_risk_filter == "Medium Risk" else "secondary",
+            key="dashboard_filter_medium"
+        ):
+            st.session_state.dashboard_risk_filter = "Medium Risk"
+            st.rerun()
+
+    with filter_col4:
+        if st.button(
+            "Low Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.dashboard_risk_filter == "Low Risk" else "secondary",
+            key="dashboard_filter_low"
+        ):
+            st.session_state.dashboard_risk_filter = "Low Risk"
+            st.rerun()
+
+    analysis_filter = st.session_state.dashboard_risk_filter
 
     if analysis_filter == "All":
         analysis_df = df.copy()
@@ -618,11 +795,70 @@ with tab_dashboard:
                     margin=dict(t=10, b=10, l=10, r=10)
                 )
 
+                fig = apply_plotly_theme(fig)
+
+
+                if chart_type == "risk":
+                    fig.update_layout(
+                        legend=dict(
+                            font=dict(
+                                color="#292832",
+                                size=12
+                            )
+                        )
+                    )
+
+                    fig.update_traces(
+                        textfont=dict(
+                            color="#292832",
+                            size=11
+                        )
+                    )
+                else:
+                    fig.update_traces(
+                        textfont=dict(
+                            color="#FFFFFF",
+                            size=11
+                        )
+                    )
+
                 st.plotly_chart(
                     fig,
                     use_container_width=True,
                     key=f"dashboard_distribution_{column}"
                 )
+
+    # -----------------------------------------------------
+    # DISTRIBUTION INSIGHT
+    # -----------------------------------------------------
+
+    risk_counts_insight = (
+        analysis_df["risk"]
+        .value_counts(normalize=True)
+        .reindex(["High Risk", "Medium Risk", "Low Risk"])
+        .fillna(0)
+    )
+
+    dominant_risk = risk_counts_insight.idxmax()
+    dominant_risk_pct = risk_counts_insight.max() * 100
+
+    avg_gpa = analysis_df["GPA"].mean()
+    avg_attendance = analysis_df["Attendance_Rate"].mean()
+    avg_study_hours = analysis_df["Study_Hours_per_Day"].mean()
+    avg_stress = analysis_df["Stress_Index"].mean()
+    avg_assignment_delay = analysis_df["Assignment_Delay_Days"].mean()
+
+    st.markdown("### 💡 Insight")
+
+    st.info(
+        f"**Distribusi data siswa:** kategori risiko yang paling dominan adalah "
+        f"**{dominant_risk}** ({dominant_risk_pct:.1f}%). "
+        f"Secara umum, rata-rata siswa memiliki GPA **{avg_gpa:.2f}**, "
+        f"tingkat kehadiran **{avg_attendance:.1f}%**, "
+        f"study hours **{avg_study_hours:.1f} jam/hari**, "
+        f"stress index **{avg_stress:.1f}**, dan assignment delay "
+        f"**{avg_assignment_delay:.1f} hari**."
+    )
 
     # -----------------------------------------------------
     # CORRELATION
@@ -676,6 +912,15 @@ with tab_dashboard:
             margin=dict(t=10, b=10, l=10, r=10)
         )
 
+        fig_heatmap = apply_plotly_theme(fig_heatmap)
+
+        fig_heatmap.update_traces(
+            textfont=dict(
+                color="#292832",
+                size=11
+            )
+        )
+
         st.plotly_chart(
             fig_heatmap,
             use_container_width=True,
@@ -717,12 +962,50 @@ with tab_dashboard:
             margin=dict(t=10, b=10, l=10, r=10)
         )
 
+        fig_corr = apply_plotly_theme(fig_corr)
+
+        fig_corr.update_traces(
+            textfont=dict(
+                color="#292832",
+                size=11
+            )
+        )
+
         st.plotly_chart(
             fig_corr,
             use_container_width=True,
             key="dashboard_correlation_dropout"
         )
+    
+    # -----------------------------------------------------
+    # CORRELATION INSIGHT
+    # -----------------------------------------------------
 
+    correlation_strength = (
+        corr_matrix["Dropout"]
+        .drop("Dropout")
+        .abs()
+        .sort_values(ascending=False)
+    )
+
+    strongest_metric = correlation_strength.index[0]
+    strongest_value = corr_matrix.loc[strongest_metric, "Dropout"]
+
+    direction = "positif" if strongest_value > 0 else "negatif"
+
+    st.markdown("### 💡 Insight")
+
+    st.info(
+        f"Indikator dengan hubungan linear paling kuat terhadap **Dropout** "
+        f"pada data yang ditampilkan adalah **{strongest_metric}**, "
+        f"dengan koefisien korelasi **{strongest_value:.2f}** "
+        f"({direction}). "
+        f"Hubungan positif menunjukkan bahwa nilai indikator yang lebih tinggi "
+        f"cenderung diikuti oleh nilai Dropout yang lebih tinggi, sedangkan "
+        f"hubungan negatif menunjukkan kecenderungan sebaliknya."
+    )
+
+    
     # -----------------------------------------------------
     # RELATIONSHIPS WITH DROPOUT
     # -----------------------------------------------------
@@ -778,6 +1061,8 @@ with tab_dashboard:
                     margin=dict(t=10, b=10, l=10, r=10)
                 )
 
+                fig_relationship = apply_plotly_theme(fig_relationship)
+
                 st.plotly_chart(
                     fig_relationship,
                     use_container_width=True,
@@ -785,67 +1070,59 @@ with tab_dashboard:
                 )
 
     # -----------------------------------------------------
-    # PERFORMANCE OVERVIEW
+    # RELATIONSHIP INSIGHT
     # -----------------------------------------------------
 
-    st.markdown("## Performance Overview")
-
-    overview = analysis_df[
-        [
-            "GPA",
-            "Attendance_Rate",
-            "Study_Hours_per_Day",
-            "Stress_Index",
-            "Travel_Time_Minutes",
-            "Assignment_Delay_Days"
-        ]
-    ].mean()
-
-    overview_df = overview.reset_index()
-    overview_df.columns = ["Metric", "Average"]
-
-    overview_df["Metric"] = [
+    relationship_columns = [
         "GPA",
-        "Attendance",
-        "Study Hours",
-        "Stress Index",
-        "Travel Time",
-        "Assignment Delay"
+        "Stress_Index",
+        "Attendance_Rate",
+        "Study_Hours_per_Day",
+        "Travel_Time_Minutes",
+        "Assignment_Delay_Days"
     ]
 
-    overview_df["Average"] = overview_df["Average"].round(2)
+    relationship_labels = {
+        "GPA": "GPA",
+        "Stress_Index": "Stress Index",
+        "Attendance_Rate": "Attendance",
+        "Study_Hours_per_Day": "Study Hours",
+        "Travel_Time_Minutes": "Travel Time",
+        "Assignment_Delay_Days": "Assignment Delay"
+    }
 
-    fig_performance = px.bar(
-        overview_df,
-        x="Metric",
-        y="Average",
-        template="plotly_white",
-        text="Average",
-        color_discrete_sequence=["#806FC9"]
+    relationship_corr = (
+        analysis_df[
+            relationship_columns + ["dropout_probability"]
+        ]
+        .corr(method="spearman")["dropout_probability"]
+        .drop("dropout_probability")
     )
 
-    fig_performance.update_layout(
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#FFFFFF",
-        font=dict(color="#292832"),
-        xaxis=dict(
-            title="",
-            gridcolor="#E2DEF2"
-        ),
-        yaxis=dict(
-            title="Average",
-            gridcolor="#E2DEF2"
-        ),
-        margin=dict(t=20, b=20, l=20, r=20)
+    strongest_relationship = relationship_corr.abs().idxmax()
+
+    strongest_relationship_value = relationship_corr.loc[
+        strongest_relationship
+    ]
+
+    relationship_direction = (
+        "positif"
+        if strongest_relationship_value > 0
+        else "negatif"
     )
 
-    st.plotly_chart(
-        fig_performance,
-        use_container_width=True,
-        key="dashboard_performance_overview"
+    st.markdown("### 💡 Insight")
+
+    st.info(
+        f"Di antara indikator yang digunakan model, **{relationship_labels[strongest_relationship]}** "
+        f"menunjukkan pola hubungan monotonic paling kuat dengan **Dropout Probability**, "
+        f"dengan korelasi Spearman **{strongest_relationship_value:.2f}** "
+        f"({relationship_direction}). "
+        f"Artinya, pada data yang ditampilkan, perubahan nilai indikator tersebut "
+        f"cenderung diikuti perubahan probabilitas dropout yang berlawanan arah. "
+        f"Temuan ini menggambarkan pola pada output model dan bukan hubungan sebab-akibat."
     )
-
-
+          
 # =========================================================
 # MONITORING TAB
 # =========================================================
@@ -854,11 +1131,54 @@ with tab_monitoring:
 
     st.markdown("## Student Risk Monitoring")
 
-    risk_filter = st.selectbox(
-        "Filter Risk Level",
-        ["All", "High Risk", "Medium Risk", "Low Risk"],
-        key="monitoring_risk_filter"
-    )
+    st.markdown("**Filter Tingkat Risiko**")
+
+    if "monitoring_risk_filter" not in st.session_state:
+        st.session_state.monitoring_risk_filter = "All"
+
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+
+    with filter_col1:
+        if st.button(
+            "All",
+            use_container_width=True,
+            type="primary" if st.session_state.monitoring_risk_filter == "All" else "secondary",
+            key="monitoring_filter_all"
+        ):
+            st.session_state.monitoring_risk_filter = "All"
+            st.rerun()
+
+    with filter_col2:
+        if st.button(
+            "High Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.monitoring_risk_filter == "High Risk" else "secondary",
+            key="monitoring_filter_high"
+        ):
+            st.session_state.monitoring_risk_filter = "High Risk"
+            st.rerun()
+
+    with filter_col3:
+        if st.button(
+            "Medium Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.monitoring_risk_filter == "Medium Risk" else "secondary",
+            key="monitoring_filter_medium"
+        ):
+            st.session_state.monitoring_risk_filter = "Medium Risk"
+            st.rerun()
+
+    with filter_col4:
+        if st.button(
+            "Low Risk",
+            use_container_width=True,
+            type="primary" if st.session_state.monitoring_risk_filter == "Low Risk" else "secondary",
+            key="monitoring_filter_low"
+        ):
+            st.session_state.monitoring_risk_filter = "Low Risk"
+            st.rerun()
+
+    risk_filter = st.session_state.monitoring_risk_filter
 
     if risk_filter == "All":
         risk_students = df.copy()
@@ -913,39 +1233,114 @@ with tab_monitoring:
         "Risk Level"
     ]
 
-    st.caption(
-        f"Menampilkan {len(display_df):,} siswa."
-    )
+    page_size = 10
+    total_rows = len(display_df)
 
-    if display_df.empty:
+    st.caption(f"Menampilkan {total_rows:,} siswa.")
+
+    if total_rows == 0:
         st.info("No students found.")
+
     else:
+        total_pages = (total_rows - 1) // page_size + 1
+
+        if "monitoring_page_number" not in st.session_state:
+            st.session_state.monitoring_page_number = 1
+
+        page_key = f"{risk_filter}|{search_term.strip()}"
+
+        if st.session_state.get("monitoring_filter_key") != page_key:
+            st.session_state.monitoring_filter_key = page_key
+            st.session_state.monitoring_page_number = 1
+
+        st.session_state.monitoring_page_number = min(
+            max(st.session_state.monitoring_page_number, 1),
+            total_pages,
+        )
+
+        current_page = st.session_state.monitoring_page_number
+
+        start_index = (current_page - 1) * page_size
+        end_index = start_index + page_size
+
+        page_df = display_df.iloc[start_index:end_index].copy()
+
         styled_table = (
-            display_df
-            .style
+            page_df.style
             .format({
                 "GPA": "{:.2f}",
                 "Attendance (%)": "{:.1f}",
                 "Study Hours / Day": "{:.1f}",
                 "Stress Index": "{:.1f}",
-                "Dropout Probability (%)": "{:.2f}"
+                "Dropout Probability (%)": "{:.2f}",
             })
             .set_properties(**{
                 "background-color": "#FFFFFF",
                 "color": "#292832",
-                "border-color": "#E2DEF2"
+                "border-color": "#E2DEF2",
             })
+            .set_table_styles([
+                {
+                    "selector": "th",
+                    "props": [
+                        ("background-color", "#6F5BC3"),
+                        ("color", "#FFFFFF"),
+                        ("font-weight", "600"),
+                        ("border-color", "#6F5BC3"),
+                    ],
+                },
+            ])
         )
 
-        st.table(styled_table)
+        st.dataframe(
+            styled_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        nav1, nav2, nav3 = st.columns([1, 2, 1])
+
+        with nav1:
+            if current_page > 1 and st.button(
+                "← Previous",
+                use_container_width=True,
+                key="monitoring_previous",
+            ):
+                st.session_state.monitoring_page_number -= 1
+                st.rerun()
+
+        with nav2:
+            st.markdown(
+                f"""
+                <div style="
+                    text-align:center;
+                    color:#292832;
+                    font-size:14px;
+                    padding-top:8px;
+                ">
+                    Page <b>{current_page}</b> of <b>{total_pages}</b>
+                    • Showing <b>{start_index + 1}</b>–<b>{min(end_index, total_rows)}</b>
+                    of <b>{total_rows}</b> students
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with nav3:
+            if current_page < total_pages and st.button(
+                "Next →",
+                use_container_width=True,
+                key="monitoring_next",
+            ):
+                st.session_state.monitoring_page_number += 1
+                st.rerun()
 
         st.download_button(
             label="Download Current Monitoring Data",
             data=display_df.to_csv(index=False).encode("utf-8"),
             file_name="edupulse_student_risk_monitoring.csv",
-            mime="text/csv"
+            mime="text/csv",
         )
-
 
 # =========================================================
 # PREDICTION TAB
@@ -1040,6 +1435,10 @@ with tab_prediction:
             risk = prediction["risk_level"]
             probability_pct = probability * 100
 
+            # =====================================================
+            # PREDICTION RESULT
+            # =====================================================
+
             result_col1, result_col2 = st.columns(2)
 
             with result_col1:
@@ -1054,69 +1453,229 @@ with tab_prediction:
                     risk
                 )
 
-            st.progress(
-                min(max(probability, 0.0), 1.0),
-                text=f"Dropout probability: {probability_pct:.2f}%"
+            # =====================================================
+            # RISK THRESHOLD VISUAL
+            # =====================================================
+
+            medium_threshold = float(risk_thresholds["medium"])
+            high_threshold = float(risk_thresholds["high"])
+
+            probability_clamped = min(max(probability, 0.0), 1.0)
+
+            probability_display = probability_clamped * 100
+            medium_display = medium_threshold * 100
+            high_display = high_threshold * 100
+
+            st.markdown("### Risk Threshold")
+
+            threshold_html = f"""
+            <div style="margin-top:10px;">
+
+            <div style="
+            position:relative;
+            height:24px;
+            background:linear-gradient(
+            to right,
+            #58A77E 0%,
+            #58A77E {medium_display}%,
+            #D0A447 {medium_display}%,
+            #D0A447 {high_display}%,
+            #D45A6D {high_display}%,
+            #D45A6D 100%
+            );
+            border-radius:12px;
+            overflow:visible;
+            ">
+
+            <div style="
+            position:absolute;
+            left:{probability_display}%;
+            top:-7px;
+            transform:translateX(-50%);
+            width:4px;
+            height:38px;
+            background:#292832;
+            border-radius:2px;
+            "></div>
+
+            </div>
+
+            <div style="
+            position:relative;
+            height:28px;
+            margin-top:8px;
+            font-size:12px;
+            color:#4A4655;
+            ">
+
+            <div style="
+            position:absolute;
+            left:0%;
+            ">
+            0%
+            </div>
+
+            <div style="
+            position:absolute;
+            left:{medium_display}%;
+            transform:translateX(-50%);
+            ">
+            {medium_display:.0f}%
+            </div>
+
+            <div style="
+            position:absolute;
+            left:{high_display}%;
+            transform:translateX(-50%);
+            ">
+            {high_display:.0f}%
+            </div>
+
+            <div style="
+            position:absolute;
+            right:0%;
+            ">
+            100%
+            </div>
+
+            </div>
+
+            <div style="
+            display:flex;
+            justify-content:space-between;
+            font-size:13px;
+            color:#4A4655;
+            margin-top:4px;
+            ">
+            <span>Low Risk</span>
+            <span>Medium Risk</span>
+            <span>High Risk</span>
+            </div>
+
+            <div style="
+            text-align:center;
+            margin-top:14px;
+            font-size:14px;
+            color:#292832;
+            ">
+            <b>Current Probability: {probability_pct:.2f}%</b>
+            </div>
+
+            </div>
+            """
+
+            st.markdown(
+                threshold_html,
+                unsafe_allow_html=True
             )
 
+            # =====================================================
+            # DYNAMIC RECOMMENDATION
+            # =====================================================
+
+            recommendations = []
+
+            # Academic performance
+            if input_gpa < 2.00:
+                recommendations.append(
+                    "GPA siswa berada di bawah 2.00. Prioritaskan pendampingan akademik dan evaluasi mata kuliah yang menjadi kendala."
+                )
+            elif input_gpa < 2.50:
+                recommendations.append(
+                    "GPA siswa masih relatif rendah. Tingkatkan konsistensi belajar dan lakukan pemantauan perkembangan akademik."
+                )
+
+            # Attendance
+            if input_attendance < 75:
+                recommendations.append(
+                    f"Tingkat kehadiran rendah ({input_attendance:.0f}%). Prioritaskan peningkatan kehadiran dan tindak lanjut terhadap penyebab ketidakhadiran."
+                )
+            elif input_attendance < 85:
+                recommendations.append(
+                    f"Tingkat kehadiran cukup rendah ({input_attendance:.0f}%). Dorong siswa untuk menjaga kehadiran lebih konsisten."
+                )
+
+            # Study hours
+            if input_study_hours < 2:
+                recommendations.append(
+                    f"Waktu belajar harian rendah ({input_study_hours:.1f} jam). Bantu siswa membangun jadwal belajar yang lebih konsisten."
+                )
+            elif input_study_hours < 3:
+                recommendations.append(
+                    f"Waktu belajar harian masih terbatas ({input_study_hours:.1f} jam). Tingkatkan durasi belajar secara bertahap."
+                )
+
+            # Stress
+            if input_stress >= 8:
+                recommendations.append(
+                    f"Tingkat stres tinggi ({input_stress:.1f}/10). Pertimbangkan dukungan dari guru, pembimbing akademik, atau layanan konseling."
+                )
+            elif input_stress >= 6:
+                recommendations.append(
+                    f"Tingkat stres cukup tinggi ({input_stress:.1f}/10). Pantau kondisi siswa dan bantu mengelola beban akademik."
+                )
+
+            # Assignment delay
+            if input_assignment_delay >= 7:
+                recommendations.append(
+                    f"Keterlambatan tugas cukup tinggi ({input_assignment_delay:.0f} hari). Susun prioritas tugas dan jadwal penyelesaian yang lebih teratur."
+                )
+            elif input_assignment_delay >= 3:
+                recommendations.append(
+                    f"Masih terdapat keterlambatan tugas ({input_assignment_delay:.0f} hari). Dorong penyelesaian tugas lebih tepat waktu."
+                )
+
+            # Travel time
+            if input_travel_time >= 90:
+                recommendations.append(
+                    f"Waktu perjalanan cukup tinggi ({input_travel_time:.0f} menit). Evaluasi dampaknya terhadap waktu belajar, kehadiran, dan kelelahan siswa."
+                )
+
+            # Risk-based recommendation
             if risk == "High Risk":
                 st.error(
-                    "Student is classified as High Risk and may need early intervention."
+                    "Siswa teridentifikasi dalam kategori Risiko Tinggi dan memerlukan intervensi awal."
                 )
-
-                st.markdown("### Recommendation")
-                st.markdown(
-                    """
-                    <div class="prediction-recommendation">
-                        <ul>
-                            <li>Prioritize immediate academic monitoring and follow-up.</li>
-                            <li>Review attendance, study habits, stress, and delayed assignments.</li>
-                            <li>Coordinate early support with the teacher or academic advisor.</li>
-                            <li>Monitor the student's progress after intervention.</li>
-                        </ul>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
             elif risk == "Medium Risk":
                 st.warning(
-                    "Student is classified as Medium Risk and should be monitored."
+                    "Siswa teridentifikasi dalam kategori Risiko Sedang dan perlu dipantau."
                 )
-
-                st.markdown("### Recommendation")
-                st.markdown(
-                    """
-                    <div class="prediction-recommendation">
-                        <ul>
-                            <li>Monitor academic and behavioral indicators regularly.</li>
-                            <li>Strengthen study consistency and attendance.</li>
-                            <li>Address assignment delays before they become persistent.</li>
-                            <li>Consider additional academic support when needed.</li>
-                        </ul>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
             else:
                 st.success(
-                    "Student is classified as Low Risk."
+                    "Siswa teridentifikasi dalam kategori Risiko Rendah."
                 )
 
-                st.markdown("### Recommendation")
+            st.markdown("### Rekomendasi")
+
+            if recommendations:
+                recommendation_html = "<ul>"
+
+                for recommendation in recommendations:
+                    recommendation_html += f"<li>{recommendation}</li>"
+
+                recommendation_html += "</ul>"
+
+                st.markdown(
+                    f"""
+                    <div class="prediction-recommendation">
+                        {recommendation_html}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
                 st.markdown(
                     """
                     <div class="prediction-recommendation">
                         <ul>
-                            <li>Maintain current study and attendance habits.</li>
-                            <li>Continue completing assignments on time.</li>
-                            <li>Keep stress at a manageable level.</li>
-                            <li>Continue monitoring progress to maintain the current condition.</li>
+                            <li>Pertahankan kebiasaan belajar dan tingkat kehadiran yang baik.</li>
+                            <li>Terus selesaikan tugas tepat waktu.</li>
+                            <li>Pertahankan tingkat stres pada kondisi yang terkendali.</li>
+                            <li>Lanjutkan pemantauan perkembangan siswa secara berkala.</li>
                         </ul>
                     </div>
                     """,
-                    unsafe_allow_html=True
+                    unsafe_allow_html=True,
                 )
 
         except Exception as exc:
@@ -1131,5 +1690,5 @@ with tab_prediction:
 st.markdown("---")
 st.caption(
     "EduPulse • Student Early Warning System • "
-    "Lightweight Logistic Regression"
+
 )
