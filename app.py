@@ -829,6 +829,69 @@ with tab_dashboard:
                     key=f"dashboard_relationship_{x_column}"
                 )
 
+    # =========================
+    # RELATIONSHIP INSIGHT
+    # =========================
+
+    relationship_columns = [
+        "attendance",
+        "quiz_1_score_pct",
+        "quiz_2_score_pct",
+        "assignment_pct",
+        "daily_study_hours"
+    ]
+
+    relationship_labels = {
+        "attendance": "Attendance",
+        "quiz_1_score_pct": "Quiz 1",
+        "quiz_2_score_pct": "Quiz 2",
+        "assignment_pct": "Assignment",
+        "daily_study_hours": "Daily Study Hours"
+    }
+
+    relationship_corr = (
+        analysis_df[
+            relationship_columns + ["final_exam_score"]
+        ]
+        .corr(method="spearman")["final_exam_score"]
+        .drop("final_exam_score")
+    )
+
+    strongest_relationship = relationship_corr.abs().idxmax()
+
+    strongest_relationship_value = relationship_corr.loc[
+        strongest_relationship
+    ]
+
+    relationship_direction = (
+        "positif"
+        if strongest_relationship_value > 0
+        else "negatif"
+    )
+
+    relationship_interpretation = (
+        "nilai indikator yang lebih tinggi cenderung diikuti "
+        "oleh nilai Final Exam yang lebih tinggi"
+        if strongest_relationship_value > 0
+        else
+        "nilai indikator yang lebih tinggi cenderung diikuti "
+        "oleh nilai Final Exam yang lebih rendah"
+    )
+
+    st.markdown("### 💡 Insight")
+
+    st.info(
+        f"Di antara indikator yang ditampilkan, "
+        f"**{relationship_labels[strongest_relationship]}** "
+        f"menunjukkan pola hubungan paling kuat dengan **Final Exam**, "
+        f"dengan korelasi Spearman **{strongest_relationship_value:.2f}** "
+        f"({relationship_direction}). "
+        f"Artinya, pada data yang ditampilkan, "
+        f"{relationship_interpretation}. "
+        f"Temuan ini menunjukkan pola hubungan pada data dan bukan "
+        f"hubungan sebab-akibat."
+    )    
+
 
     # =========================
     # PERFORMANCE OVERVIEW
