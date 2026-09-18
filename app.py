@@ -1257,36 +1257,66 @@ with tab_prediction:
 
             if risk == "High Risk":
                 st.error(
-                    "Student is classified as High Risk and may need early intervention."
-                )
-                st.markdown("### Recommendation")
-                st.markdown(
-                    """
-                    <div class="prediction-recommendation">
-                        <ul>
-                            <li>Prioritize improving the lowest academic indicators first.</li>
-                            <li>Increase study time gradually and maintain a consistent study schedule.</li>
-                            <li>Improve attendance and complete assignments on time.</li>
-                            <li>Consider early intervention or additional support from a teacher.</li>
-                        </ul>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                    "Siswa berada dalam kategori High Risk dan memerlukan perhatian lebih awal."
                 )
 
             elif risk == "Medium Risk":
                 st.warning(
-                    "Student is classified as Medium Risk and should be monitored."
+                    "Siswa berada dalam kategori Medium Risk dan perlu dipantau secara berkala."
                 )
-                st.markdown("### Recommendation")
+
+            else:
+                st.success(
+                    "Siswa berada dalam kategori Low Risk."
+                )
+
+
+            # =========================
+            # RECOMMENDATION
+            # =========================
+
+            recommendations = []
+
+            if input_attendance < 75:
+                recommendations.append(
+                    "Tingkatkan kehadiran dan usahakan mengikuti kegiatan pembelajaran secara lebih konsisten."
+                )
+
+            if input_quiz_1 < 70:
+                recommendations.append(
+                    "Tingkatkan hasil Quiz 1 melalui latihan soal dan evaluasi materi yang masih belum dikuasai."
+                )
+
+            if input_quiz_2 < 70:
+                recommendations.append(
+                    "Tingkatkan hasil Quiz 2 dengan memperbanyak latihan dan meninjau kembali materi pembelajaran."
+                )
+
+            if input_assignment < 70:
+                recommendations.append(
+                    "Tingkatkan hasil assignment dengan menyelesaikan tugas secara lebih teratur dan tepat waktu."
+                )
+
+            if input_study_hours < 2:
+                recommendations.append(
+                    "Tambah waktu belajar secara bertahap dan pertahankan jadwal belajar yang konsisten."
+                )
+
+
+            st.markdown("### Rekomendasi")
+
+            if recommendations:
+
                 st.markdown(
                     """
                     <div class="prediction-recommendation">
                         <ul>
-                            <li>Strengthen the academic indicators that are still below target.</li>
-                            <li>Maintain regular study habits and avoid a decline in performance.</li>
-                            <li>Improve quiz and assignment consistency.</li>
-                            <li>Continue monitoring progress before the next assessment.</li>
+                    """
+                    + "".join(
+                        f"<li>{recommendation}</li>"
+                        for recommendation in recommendations
+                    )
+                    + """
                         </ul>
                     </div>
                     """,
@@ -1294,18 +1324,42 @@ with tab_prediction:
                 )
 
             else:
-                st.success(
-                    "Student is classified as Low Risk."
-                )
-                st.markdown("### Recommendation")
+
+                if risk == "High Risk":
+
+                    recommendations = [
+                        "Lakukan evaluasi terhadap seluruh indikator akademik untuk mengetahui area yang perlu diperbaiki.",
+                        "Tingkatkan konsistensi belajar dan lakukan pemantauan performa secara berkala.",
+                        "Pertimbangkan pendampingan atau intervensi akademik lebih awal.",
+                        "Pantau perkembangan siswa setelah strategi perbaikan diterapkan."
+                    ]
+
+                elif risk == "Medium Risk":
+
+                    recommendations = [
+                        "Pertahankan indikator akademik yang sudah baik dan perbaiki area yang masih perlu ditingkatkan.",
+                        "Jaga konsistensi belajar dan lakukan pemantauan performa secara berkala.",
+                        "Evaluasi kembali hasil quiz dan assignment pada penilaian berikutnya."
+                    ]
+
+                else:
+
+                    recommendations = [
+                        "Pertahankan tingkat kehadiran dan kebiasaan belajar saat ini.",
+                        "Jaga konsistensi hasil quiz dan assignment.",
+                        "Terus belajar secara rutin untuk mempertahankan performa akademik."
+                    ]
+
                 st.markdown(
                     """
                     <div class="prediction-recommendation">
                         <ul>
-                            <li>Maintain current attendance and study habits.</li>
-                            <li>Keep quiz and assignment performance consistent.</li>
-                            <li>Continue preparing regularly to sustain academic performance.</li>
-                            <li>Challenge yourself with higher-level learning goals when appropriate.</li>
+                    """
+                    + "".join(
+                        f"<li>{recommendation}</li>"
+                        for recommendation in recommendations
+                    )
+                    + """
                         </ul>
                     </div>
                     """,
