@@ -165,6 +165,35 @@ div[data-testid="stAlert"] span {
     border-color: #806FC9 !important;
 }
 
+
+/* =========================
+   SEARCH STUDENT ID
+   ========================= */
+
+div[data-testid="stTextInput"] > div {
+    background-color: #FFFFFF !important;
+    border-radius: 8px !important;
+}
+
+div[data-testid="stTextInput"] input {
+    background-color: #FFFFFF !important;
+    color: #292832 !important;
+    -webkit-text-fill-color: #292832 !important;
+    border-color: #E2DEF2 !important;
+}
+
+div[data-testid="stTextInput"] input:focus {
+    background-color: #FFFFFF !important;
+    color: #292832 !important;
+    -webkit-text-fill-color: #292832 !important;
+    border-color: #806FC9 !important;
+    box-shadow: 0 0 0 1px #806FC9 !important;
+}
+
+div[data-testid="stTextInput"] label {
+    color: #6F6D78 !important;
+}
+
 /* =========================
    RISK FILTER - STREAMLIT 1.61
    ========================= */
@@ -969,6 +998,23 @@ with tab_monitoring:
         risk_students = df.copy()
     else:
         risk_students = df[df["risk"] == risk_filter].copy()
+
+    # Search Student ID
+    search_student = st.text_input(
+        "Search Student ID",
+        placeholder="Enter Student ID..."
+    )
+
+    if search_student.strip():
+        risk_students = risk_students[
+            risk_students["student_id"]
+            .astype(str)
+            .str.contains(
+                search_student.strip(),
+                case=False,
+                na=False
+            )
+        ]
 
     # Kolom yang ditampilkan
     display_columns = [
