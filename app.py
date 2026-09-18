@@ -394,7 +394,10 @@ df["risk"] = df["predicted_score"].apply(
 # SIDEBAR / NAVIGATION
 # =========================
 with st.sidebar:
-    st.markdown("# 📊 EduPulse")
+    st.image(
+        "new-logo-edupulse/new-logo-edupulse.svg",
+        width=125
+    )
     st.markdown("### Student Early Warning System")
     st.divider()
     st.markdown("**Dashboard**")
