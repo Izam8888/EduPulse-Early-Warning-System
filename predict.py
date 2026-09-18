@@ -16,15 +16,11 @@ thresholds = model_package["risk_thresholds"]
 
 def predict_student(
     attendance,
-    quiz_1_score,
-    quiz_2_score,
-    assignment_score,
+    quiz_1_score_pct,
+    quiz_2_score_pct,
+    assignment_pct,
     daily_study_hours
 ):
-    quiz_1_score_pct = (quiz_1_score / 40) * 100
-    quiz_2_score_pct = (quiz_2_score / 40) * 100
-    assignment_pct = (assignment_score / 10) * 100
-
     features = pd.DataFrame([{
         "attendance": attendance,
         "quiz_1_score_pct": quiz_1_score_pct,

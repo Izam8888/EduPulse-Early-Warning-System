@@ -369,13 +369,20 @@ with st.sidebar:
     st.markdown("### Student Early Warning System")
     st.divider()
     st.markdown("**Dashboard**")
-    st.markdown("Monitor student performance and identify students who may need early intervention.")
+    st.markdown(
+        "Pantau performa akademik siswa dan identifikasi siswa "
+        "yang memerlukan perhatian lebih awal."
+    )
 
 # =========================
 # HEADER
 # =========================
 st.title("Student Performance Dashboard")
-st.markdown("Monitor academic performance and identify students who may need early intervention.")
+st.markdown(
+    "Pantau performa akademik siswa dan identifikasi siswa yang "
+    "mungkin memerlukan early intervention berdasarkan hasil prediksi Final Exam."
+)
+
 
 # =========================
 # KPI CARDS
@@ -605,6 +612,51 @@ with tab_dashboard:
                 )
 
     # =========================
+    # DISTRIBUTION INSIGHT
+    # =========================
+
+    avg_final = analysis_df["final_exam_score"].mean()
+    avg_attendance = analysis_df["attendance"].mean()
+    avg_quiz_1 = analysis_df["quiz_1_score_pct"].mean()
+    avg_quiz_2 = analysis_df["quiz_2_score_pct"].mean()
+    avg_assignment = analysis_df["assignment_pct"].mean()
+    avg_study_hours = analysis_df["daily_study_hours"].mean()
+
+    st.markdown("### 💡 Insight")
+
+    if analysis_filter == "All":
+
+        risk_distribution = (
+            analysis_df["risk"]
+            .value_counts(normalize=True)
+            .reindex(["High Risk", "Medium Risk", "Low Risk"])
+            .fillna(0)
+        )
+
+        dominant_risk = risk_distribution.idxmax()
+        dominant_risk_pct = risk_distribution.max() * 100
+
+        st.info(
+            f"Kategori risiko yang paling dominan adalah **{dominant_risk}** "
+            f"({dominant_risk_pct:.1f}%). Secara keseluruhan, rata-rata "
+            f"Final Exam adalah **{avg_final:.1f}**, attendance **{avg_attendance:.1f}%**, "
+            f"Quiz 1 **{avg_quiz_1:.1f}**, Quiz 2 **{avg_quiz_2:.1f}**, "
+            f"assignment **{avg_assignment:.1f}**, dan daily study hours "
+            f"**{avg_study_hours:.1f} jam/hari**."
+        )
+
+    else:
+
+        st.info(
+            f"Pada filter **{analysis_filter}**, terdapat **{len(analysis_df):,} siswa** "
+            f"dengan rata-rata Final Exam **{avg_final:.1f}**. "
+            f"Rata-rata attendance sebesar **{avg_attendance:.1f}%**, "
+            f"Quiz 1 **{avg_quiz_1:.1f}**, Quiz 2 **{avg_quiz_2:.1f}**, "
+            f"assignment **{avg_assignment:.1f}**, dan daily study hours "
+            f"**{avg_study_hours:.1f} jam/hari**."
+        )
+
+    # =========================
     # CORRELATION
     # =========================
     st.markdown("## Correlation")
@@ -699,6 +751,28 @@ with tab_dashboard:
         )
 
     # =========================
+    # INSIGHT
+    # =========================
+
+    strongest = correlation_df_analysis.loc[
+        correlation_df_analysis["Correlation"].idxmax()
+    ]
+
+    direction = "positif" if strongest["Correlation"] > 0 else "negatif"
+
+    st.markdown("### 💡 Insight")
+
+    st.info(
+        f"Indikator dengan hubungan linear paling kuat terhadap **Final Exam** "
+        f"pada data yang ditampilkan adalah **{strongest['Metric']}**, "
+        f"dengan koefisien korelasi **{strongest['Correlation']:.2f}** "
+        f"({direction}). "
+        f"Hubungan positif menunjukkan bahwa nilai indikator yang lebih tinggi "
+        f"cenderung diikuti oleh nilai Final Exam yang lebih tinggi, sedangkan "
+        f"hubungan negatif menunjukkan kecenderungan sebaliknya."
+    )
+
+    # =========================
     # RELATIONSHIPS WITH FINAL EXAM
     # =========================
     st.markdown("## Relationship with Final Exam")
@@ -755,20 +829,6 @@ with tab_dashboard:
                     key=f"dashboard_relationship_{x_column}"
                 )
 
-    # =========================
-    # EDA INSIGHT
-    # =========================
-    strongest = correlation_df_analysis.loc[
-        correlation_df_analysis["Correlation"].idxmax()
-    ]
-
-    st.info(
-        f"{strongest['Metric']} memiliki hubungan paling kuat dengan nilai Final Exam "
-        f"(r = {strongest['Correlation']:.3f}). Siswa dengan nilai "
-        f"{strongest['Metric'].lower()} yang lebih tinggi cenderung memiliki nilai "
-        "Final Exam yang lebih tinggi. Hubungan ini tidak berarti bahwa variabel "
-        "tersebut menjadi satu-satunya penentu nilai ujian."
-    )
 
     # =========================
     # PERFORMANCE OVERVIEW
