@@ -1,8 +1,9 @@
-
+import os
 import joblib
 import pandas as pd
 
-MAIN_MODEL_PATH = "edupulse_dropout_model.joblib"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MAIN_MODEL_PATH = os.path.join(BASE_DIR, "edupulse_dropout_model.joblib")
 
 main_pipeline = joblib.load(MAIN_MODEL_PATH)
 
